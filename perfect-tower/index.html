@@ -17,6 +17,7 @@
 
     <script src="addon/edit/matchbrackets.js"></script>
     <script src="addon/selection/active-line.js"></script>
+    <script src="addon/mode/simple.js"></script>
 
 	<link rel="stylesheet" href="./style.css">
 
@@ -80,7 +81,29 @@
 			return fengari.load("return lua_main'" + func + "';")();
 		}
 
-        const theme = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "darcula" : "default";
+		const theme = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "darcula" : "default";
+
+		CodeMirror.defineSimpleMode("perfecttowerscript", {
+			start: [
+					{regex: /(:)(local|global|constant)(\s+)(int|double|string|bool)(\s+)([\w_]+)/,
+						token: [null, "scope.keyword", null, "type", null, "symbol.variable-3"]},
+					{regex: /((["'])[^\2]*\2)/, token: "string"},
+					{regex: /true|false|null|undefined/, token: "atom"},
+					{regex: /;.*/, token: "comment"},
+					{regex: /[-+\/*=<>!%]+/, token: "operator"},
+					{regex: /([a-zA-Z_][\w\._]*)(\()/,
+						token: ["function.variable", "bracket"]},
+					{regex: /[\(\)]/, token: "bracket"},
+					{regex: /[a-zA-Z_][\w\._]*:?/,
+						token: "label.variable-3"},
+					{regex: /0x[a-f\d]+|[-+]?(?:\.\d+|\d+\.?\d*)(?:e[-+]?\d+)?/i,
+						token: "number"},
+				],
+				meta: {
+					lineComment: ";"
+				},
+			}
+		);
 
 		var editor = CodeMirror.fromTextArea(document.getElementById("scripts"), {
 			autocapitalize: false,
@@ -94,6 +117,7 @@
             theme: theme,
             styleActiveLine: true,
             matchBrackets: true,
+            mode: "perfecttowerscript",
   		});
 
 		editor.on("change", function() {
